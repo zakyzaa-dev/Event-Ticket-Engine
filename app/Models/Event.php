@@ -28,7 +28,7 @@ class Event extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'registrations')
-        ->withPivot('ticket_code', 'created_at')
+        ->withPivot('ticket_code')
         ->withTimestamps();
     }
 }

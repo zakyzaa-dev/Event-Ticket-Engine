@@ -18,6 +18,6 @@ Route::prefix('v1')->group(function () {
         Route::controller(EventController::class)->prefix('events')->group(function () {
             Route::post('{event:slug}/register', 'eventRegister');
         });
-            Route::resource('events', EventController::class);
+        Route::resource('events', EventController::class);
     });
 });

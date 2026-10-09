@@ -32,43 +32,42 @@ class EventController extends Controller
                     'reason' => "Email domain not allowed for this event",
                 ], 403);
             }
-
-            $isRegistered = $user->registeredEvents()->where('event_id', $event->id)->exists();
-            if ($isRegistered){
-                return response()->json([
-                    'message' => 'Failed to register',
-                    'reason' => 'You have already registered for this event'
-                ], 422);
-            }
-
-            $totalParticipants = $event->participants()->count();
-            if ($totalParticipants >= $event->max_capacity) {
-                return response()->json([
-                    'message' => 'Event quota is full'
-                ], 422);
-            }
-
-            $ticketCode = $this->ticketCode();
-            $user->registeredEvents()
-            ->attach($event->id,
-            [
-                'ticket_code' => $ticketCode
-            ]);
-
-            return response()->json([
-                'message' => 'Registration success',
-                'registration' => [
-                    'event_title' => $event->title,
-                    'ticket_code' => $ticketCode,
-                    'registered_at' => $event->pivot->created_at
-                ],
-            ], 200);
-
-            // TESTING
-            // return response()->json([
-            //     'sisa_kapasitas' => $event->max_capacity - $totalParticipants - 1
-            // ], 200);
         }
+
+        $isRegistered = $user->registeredEvents()->where('event_id', $event->id)->exists();
+        if ($isRegistered){
+            return response()->json([
+                'message' => 'Failed to register',
+                'reason' => 'You have already registered for this event'
+            ], 422);
+        }
+
+        $totalParticipants = $event->participants()->count();
+        if ($totalParticipants >= $event->max_capacity) {
+            return response()->json([
+                'message' => 'Event quota is full'
+            ], 422);
+        }
+
+        $ticketCode = $this->ticketCode();
+        $user->registeredEvents()
+        ->attach($event->id,
+        [
+            'ticket_code' => $ticketCode
+        ]);
+
+        return response()->json([
+            'message' => 'Registration success',
+            'registration' => [
+                'event_title' => $event->title,
+                'ticket_code' => $ticketCode,
+            ],
+        ], 200);
+
+        // TESTING
+        // return response()->json([
+        //     'sisa_kapasitas' => $event->max_capacity - $totalParticipants - 1
+        // ], 200);
     }
 
     /**

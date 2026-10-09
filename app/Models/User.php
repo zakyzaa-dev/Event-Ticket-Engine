@@ -41,7 +41,7 @@ class User extends Authenticatable
     public function registeredEvents(): BelongsToMany
     {
         return $this->belongsToMany(Event::class, 'registrations')
-        ->withPivot('ticket_code', 'created_at')
+        ->withPivot('ticket_code')
         ->withTimestamps();
     }
 }
