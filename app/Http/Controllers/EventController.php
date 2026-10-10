@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\DB;
 class EventController extends Controller
 {
 
+    public function getAllEvents()
+    {
+        $events = Event::take(10)->get();
+        return response()->json([
+            'message' => 'Success get all events',
+            'events' => EventResource::collection($events),
+        ], 200);
+    }
+
     public function ticketCode(): string
     {
         return "EVT-" . Str::upper(Str::random(5));

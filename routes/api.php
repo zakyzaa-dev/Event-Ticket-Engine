@@ -14,10 +14,15 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    Route::controller(EventController::class)->prefix('events')->group(function () {
+        Route::get('/all', 'getAllEvents');
+    });
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::controller(EventController::class)->prefix('events')->group(function () {
-            Route::post('{event:slug}/register', 'eventRegister');
+            Route::post('/{event:slug}/register', 'eventRegister');
         });
+
         Route::resource('events', EventController::class);
     });
 });
