@@ -56,11 +56,14 @@ class EventController extends Controller
             'ticket_code' => $ticketCode
         ]);
 
+        $registeredEvent = $user->registeredEvents()->where('event_id', $event->id)->first();
+
         return response()->json([
             'message' => 'Registration success',
             'registration' => [
                 'event_title' => $event->title,
                 'ticket_code' => $ticketCode,
+                'joined' => $registeredEvent->pivot->created_at
             ],
         ], 200);
 
