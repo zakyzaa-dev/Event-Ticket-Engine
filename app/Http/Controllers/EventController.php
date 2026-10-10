@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEventRequest;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\Interfaces\IEventService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -14,9 +15,16 @@ use Illuminate\Support\Facades\DB;
 class EventController extends Controller
 {
 
+    protected IEventService $_eventService;
+
+    public function __construct(IEventService $eser)
+    {
+        $this->_eventService = $eser;
+    }
+
     public function getAllEvents()
     {
-        $events = Event::take(10)->get();
+        $events = $this->_eventService->getAllEvents();
         return response()->json([
             'message' => 'Success get all events',
             'events' => EventResource::collection($events),
