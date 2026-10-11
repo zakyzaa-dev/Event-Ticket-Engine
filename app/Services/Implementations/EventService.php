@@ -29,6 +29,11 @@ class EventService implements IEventService
     public function createNewEvent(User $user, array $data)
     {
         $createNewEvent = $user->createdEvents()->create($data);
+        Log::info("$user->name membuat event baru!", [
+            'user_id' => $user->id,
+            'event_name' => $createNewEvent->title,
+            'created_at' => $createNewEvent->created_at
+        ]);
         return $createNewEvent;
     }
 }
