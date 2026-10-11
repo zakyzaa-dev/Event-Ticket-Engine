@@ -7,10 +7,12 @@ use App\Http\Resources\EventResource;
 use App\Models\Event;
 use App\Models\User;
 use App\Services\Interfaces\IEventService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -94,11 +96,24 @@ class EventController extends Controller
      */
     public function index()
     {
-        $myEvents = Auth::user()->createdEvents;
-        return response()->json([
-            'message'=> 'Get events success',
-            'events' => EventResource::collection($myEvents),
-        ], 200);
+        try{
+            $user = Auth::user();
+            $myEvents = $this->_eventService->getAllUserEvents($user);
+
+            return response()->json([
+                'message'=> 'Get events success',
+                'events' => EventResource::collection($myEvents),
+            ], 200);
+
+        }catch (Exception $e){
+            Log::error('Gagal mengambil event. Error:' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to get user event',
+                'error' => config('app.debug') ? $e->getMessage() : "Internal server error",
+            ], 500);
+        }
+
     }
 
     /**
@@ -106,17 +121,21 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
-        // return response()->json([
-        //     'data' => $request->all()
-        // ]);
+        try{
+            $user = Auth::user();
+            $newEvent = $this->_eventService->createNewEvent($user, $request->validated());
+            return response()->json([
+                'message' => 'Success created new event',
+                'event' => new EventResource($newEvent)
+            ], 201);
+        }catch (Exception $e){
+            Log::error('Gagal membuat event. Error:' . $e->getMessage());
 
-        $validated = $request->validated();
-        $event = $request->user()->createdEvents()->create($validated);
-
-        return response()->json([
-            'message' => 'Create event success',
-            'event' => new EventResource($event)
-        ], 201);
+            return response()->json([
+                'message' => 'Failed to get user event',
+                'error' => config('app.debug') ? $e->getMessage() : "Internal server error",
+            ], 500);
+        }
     }
 
     /**
