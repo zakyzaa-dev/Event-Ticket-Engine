@@ -5,6 +5,8 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EventException extends Exception
 {
@@ -14,10 +16,16 @@ class EventException extends Exception
      */
     public function report(): void
     {
-        //
+        $user = Auth::user();
+
+        Log::error("Terjadi event error: {$this->getMessage()}", [
+            'exception_code' => $this->getCode(),
+            'user_id' => $user ? $user->id : 'Guest/Anonym',
+            'email' => $user ? $user->email : '-',
+        ]);
     }
 
-    public function __construct(string $message, string $reason = "", int $code = 0)
+    public function __construct(string $message, string $reason = "", int $code = 400)
     {
         parent::__construct($message, $code);
         $this->reason = $reason;
