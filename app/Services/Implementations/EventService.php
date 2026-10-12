@@ -2,10 +2,12 @@
 
 namespace App\Services\Implementations;
 
-use App\Http\Requests\StoreEventRequest;
 use App\Models\Event;
 use App\Models\User;
 use App\Services\Interfaces\IEventService;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Override;
 
@@ -35,5 +37,43 @@ class EventService implements IEventService
             'created_at' => $createNewEvent->created_at
         ]);
         return $createNewEvent;
+    }
+
+    public function codeTicket()
+    {
+        return "EVT-" . Str::upper(Str::random(5));
+    }
+
+    #[Override]
+    public function registerEvent(User $user, int $eventId)
+    {
+        $event = Event::where('id', $eventId)->lockForUpdate()->first();
+
+        if ($event->allowed_domains){
+            $userDomain = Str::after($user->email, '@');
+
+            if (!in_array($userDomain, $event->allowed_domains)){
+                throw new Exception("Email domain not allowed for this event", 403);
+            };
+        }
+
+        return DB::transaction(function () use ($user, $event){
+            $isRegistered = $user->registeredEvents()->where('event_id', $event->id)->exists();
+            if ($isRegistered){
+                throw new Exception("You have already registered for this event", 422);
+            };
+
+            $totalParticipants = $event->participants()->count();
+            if ($totalParticipants >= $event->max_capacity){
+                throw new Exception("Event quota is full", 422);
+            }
+
+            $ticketCode = $this->codeTicket();
+            $user->registeredEvents()->attach($event->id, [
+                'ticket_code' => $ticketCode,
+            ]);
+
+            return $user->registeredEvents()->where('event_id', $event->id)->first();
+        });
     }
 }

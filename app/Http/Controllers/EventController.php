@@ -40,55 +40,22 @@ class EventController extends Controller
 
     public function eventRegister(Event $event)
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if ($event->allowed_domains){
-            $user_domain = Str::after($user->email, '@');
-
-            if (!in_array($user_domain, $event->allowed_domains)){
-                return response()->json([
-                    'message' => 'Forbidden access',
-                    'reason' => "Email domain not allowed for this event",
-                ], 403);
-            }
-        }
-
-        return DB::transaction(function () use ($user, $event){
-
-            $isRegistered = $user->registeredEvents()->where('event_id', $event->id)->exists();
-            if ($isRegistered){
-                return response()->json([
-                    'message' => 'Failed to register',
-                    'reason' => 'You have already registered for this event'
-                ], 422);
-            }
-
-            $totalParticipants = $event->participants()->lockForUpdate()->count();
-            if ($totalParticipants >= $event->max_capacity) {
-                return response()->json([
-                    'message' => 'Event quota is full'
-                ], 422);
-            }
-
-            $ticketCode = $this->ticketCode();
-            $user->registeredEvents()
-            ->attach($event->id,
-            [
-                'ticket_code' => $ticketCode
-            ]);
-
-            $registeredEvent = $user->registeredEvents()->where('event_id', $event->id)->first();
-
+        try{
+            $event = $this->_eventService->registerEvent(Auth::user(), $event->id);
             return response()->json([
                 'message' => 'Registration success',
                 'registration' => [
                     'event_title' => $event->title,
-                    'ticket_code' => $ticketCode,
-                    'joined' => $registeredEvent->pivot->created_at
-                ],
-            ], 200);
-        });
+                    'ticket_code' => $event->pivot->ticketCode,
+                    'joined' => $event->pivot->created_at,
+                ]
+            ], 201);
+        }catch (Exception $e) {
+            return response()->json([
+                'message' => 'error',
+                'error' => $e->getMessage(),
+            ], $e->getCode() ?: 500);
+        }
     }
 
     /**
@@ -97,8 +64,7 @@ class EventController extends Controller
     public function index()
     {
         try{
-            $user = Auth::user();
-            $myEvents = $this->_eventService->getAllUserEvents($user);
+            $myEvents = $this->_eventService->getAllUserEvents(Auth::user());
 
             return response()->json([
                 'message'=> 'Get events success',
@@ -122,8 +88,7 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         try{
-            $user = Auth::user();
-            $newEvent = $this->_eventService->createNewEvent($user, $request->validated());
+            $newEvent = $this->_eventService->createNewEvent(Auth::user(), $request->validated());
             return response()->json([
                 'message' => 'Success created new event',
                 'event' => new EventResource($newEvent)
