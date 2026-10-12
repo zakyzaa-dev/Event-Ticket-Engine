@@ -38,22 +38,15 @@ class EventController extends Controller
 
     public function eventRegister(Event $event)
     {
-        try{
-            $event = $this->_eventService->registerEvent(Auth::user(), $event->id);
-            return response()->json([
-                'message' => 'Registration success',
-                'registration' => [
-                    'event_title' => $event->title,
-                    'ticket_code' => $event->pivot->ticketCode,
-                    'joined' => $event->pivot->created_at,
-                ]
-            ], 201);
-        }catch (Exception $e) {
-            return response()->json([
-                'message' => 'error',
-                'error' => $e->getMessage(),
-            ], $e->getCode() ?: 500);
-        }
+        $event = $this->_eventService->registerEvent(Auth::user(), $event->id);
+        return response()->json([
+            'message' => 'Registration success',
+            'registration' => [
+                'event_title' => $event->title,
+                'ticket_code' => $event->pivot->ticketCode,
+                'joined' => $event->pivot->created_at,
+            ]
+        ], 201);
     }
 
     /**
