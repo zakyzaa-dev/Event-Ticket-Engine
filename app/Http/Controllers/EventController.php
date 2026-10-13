@@ -31,10 +31,6 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function ticketCode(): string
-    {
-        return "EVT-" . Str::upper(Str::random(5));
-    }
 
     public function eventRegister(Event $event)
     {

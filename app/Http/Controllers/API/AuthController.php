@@ -5,46 +5,30 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Services\Interfaces\IAuthService;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
+    protected IAuthService $_authService;
+    public function __construct(IAuthService $aser)
+    {
+        $this->_authService = $aser;
+    }
+
     public function login(LoginRequest $reqlog)
     {
-        $creds = $reqlog->validated();
-
-        if (!Auth::attempt($creds)){
-            return response()->json([
-                'message' => 'Email or password incorrect'
-            ], 401);
-        }
-
-        /** @var User $user */
-        $user = Auth::user();
-        $token =  $user->createToken('token_auth')->plainTextToken;
-
+        $login = $this->_authService->login($reqlog->validated());
         return response()->json([
             'message' => 'Login Success',
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'token_type' => 'Bearer',
-                'token' => $token
-            ],
+            'user' => $login,
         ], 200);
     }
 
     public function logout()
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        /** @var PersonalAccessToken $token */
-        $token = $user->currentAccessToken();
-        $token->delete();
-
+        $this->_authService->logout(Auth::user());
         return response()->json([
             'message' => 'Logout success'
         ], 200);
