@@ -31,7 +31,6 @@ class EventController extends Controller
         ], 200);
     }
 
-
     public function eventRegister(Event $event)
     {
         $event = $this->_eventService->registerEvent(Auth::user(), $event->id);
@@ -50,23 +49,12 @@ class EventController extends Controller
      */
     public function index()
     {
-        try{
-            $myEvents = $this->_eventService->getAllUserEvents(Auth::user());
+        $myEvents = $this->_eventService->getAllUserEvents(Auth::user());
 
-            return response()->json([
-                'message'=> 'Get events success',
-                'events' => EventResource::collection($myEvents),
-            ], 200);
-
-        }catch (Exception $e){
-            Log::error('Gagal mengambil event. Error:' . $e->getMessage());
-
-            return response()->json([
-                'message' => 'Failed to get user event',
-                'error' => config('app.debug') ? $e->getMessage() : "Internal server error",
-            ], 500);
-        }
-
+        return response()->json([
+            'message'=> 'Get events success',
+            'events' => EventResource::collection($myEvents),
+        ], 200);
     }
 
     /**
@@ -74,20 +62,11 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
-        try{
-            $newEvent = $this->_eventService->createNewEvent(Auth::user(), $request->validated());
-            return response()->json([
-                'message' => 'Success created new event',
-                'event' => new EventResource($newEvent)
-            ], 201);
-        }catch (Exception $e){
-            Log::error('Gagal membuat event. Error:' . $e->getMessage());
-
-            return response()->json([
-                'message' => 'Failed to get user event',
-                'error' => config('app.debug') ? $e->getMessage() : "Internal server error",
-            ], 500);
-        }
+        $newEvent = $this->_eventService->createNewEvent(Auth::user(), $request->validated());
+        return response()->json([
+            'message' => 'Success created new event',
+            'event' => new EventResource($newEvent)
+        ], 201);
     }
 
     /**

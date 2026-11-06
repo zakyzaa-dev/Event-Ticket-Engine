@@ -13,6 +13,7 @@ use Override;
 
 class EventService implements IEventService
 {
+    // Service method to get all events existed
     #[Override]
     public function getAllEvents()
     {
@@ -20,6 +21,7 @@ class EventService implements IEventService
         return $events;
     }
 
+    // Service method to get all events created by user
     #[Override]
     public function getAllUserEvents(User $user)
     {
@@ -27,6 +29,7 @@ class EventService implements IEventService
         return $myEvents;
     }
 
+    // create new events
     #[Override]
     public function createNewEvent(User $user, array $data)
     {
@@ -39,11 +42,13 @@ class EventService implements IEventService
         return $createNewEvent;
     }
 
+    // generating random ticket code
     public function codeTicket()
     {
         return "EVT-" . Str::upper(Str::random(5));
     }
 
+    // register to an event
     #[Override]
     public function registerEvent(User $user, int $eventId)
     {
