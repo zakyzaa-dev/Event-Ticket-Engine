@@ -17,7 +17,7 @@ class EventService implements IEventService
     #[Override]
     public function getAllEvents()
     {
-        $events = Event::take(10)->get();
+        $events = Event::take(10)->with('creator')->get();
         return $events;
     }
 
@@ -25,7 +25,7 @@ class EventService implements IEventService
     #[Override]
     public function getAllUserEvents(User $user)
     {
-        $myEvents = $user->createdEvents()->take(10)->get();
+        $myEvents = $user->createdEvents()->take(10)->with('creator')->get();
         return $myEvents;
     }
 

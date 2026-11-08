@@ -22,7 +22,7 @@ class Event extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'creator_id');
     }
 
     public function participants(): BelongsToMany

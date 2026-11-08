@@ -18,8 +18,9 @@ class EventResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
+            'description' => $this->description,
             'max_capacity' => $this->max_capacity,
-            'creator_id' => $this->creator?->id ?? 67,
+            'creator' => new UserResource($this->whenLoaded('creator'))
         ];
     }
 }
